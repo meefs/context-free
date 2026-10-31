@@ -1,6 +1,9 @@
 
 all: cfdg
 
+PROJECT_VERSION ?= 3.5
+DEBIAN_VERSION ?= 1
+
 
 #
 # Dirs
@@ -146,7 +149,7 @@ src-common/examples.h: $(INPUT_SRCS)
 # Utility
 #
 
-.PHONY: clean distclean install uninstall
+.PHONY: clean distclean deb-clean install uninstall tars
 clean :
 	rm -f $(OBJ_DIR)/*
 	rm -f cfdg
@@ -154,6 +157,9 @@ clean :
 distclean: clean
 	rmdir $(OBJ_DIR) 2> /dev/null || true
 	rm -fr output 2> /dev/null || true
+
+deb-clean:
+	dh clean
 
 $(OBJ_DIR)/Sentry :
 	mkdir -p $(OBJ_DIR) 2> /dev/null || true
@@ -167,6 +173,20 @@ install: cfdg cfdg.1
 uninstall:
 	-rm -f $(BIN_DIR)/cfdg
 	-rm -f $(MAN_DIR)/man1/cfdg.1
+
+# tar files for Debian package
+
+PROJECT_DIR = contextfree-$(PROJECT_VERSION)
+TAR_NAME = contextfree_$(PROJECT_VERSION)+dfsg
+
+tars: # deb-clean
+	tar -cJvf ../$(TAR_NAME).orig.tar.xz --exclude=debian --exclude=src-osx \
+	  --exclude=src-win --exclude=src-agg --exclude=src-scintilla \
+	  --exclude=src-lexilla --exclude=src-mfc --exclude=src-png \
+	  --exclude=src-ffmpeg --exclude=objs --exclude=xcodeproj \
+          --transform "s,^,$(PROJECT_DIR)/,S" *
+	tar -cJvf ../$(TAR_NAME)-$(DEBIAN_VERSION).debian.tar.xz debian/
+
 
 #
 # Tests
