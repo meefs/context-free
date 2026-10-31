@@ -98,21 +98,10 @@ else
 endif
 
 OBJS = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(SRCS))
-DEPS = $(patsubst %.o,%.d,$(OBJS))
 
 LINKFLAGS += $(patsubst %,-L%,$(LIB_DIRS))
 LINKFLAGS += $(patsubst %,-l%,$(LIBS))
 LINKFLAGS += -fexceptions
-
-deps: $(OBJ_DIR) $(DEPS)
-
-ifneq ($(MAKECMDGOALS),clean)
-ifneq ($(MAKECMDGOALS),distclean)
-ifneq ($(MAKECMDGOALS),src-common/examples.h)
-include $(DEPS)
-endif
-endif
-endif
 
 $(OBJS): $(OBJ_DIR)/Sentry
 
@@ -205,7 +194,7 @@ check: cfdg
 
 CXXFLAGS += $(patsubst %,-I%,$(INC_DIRS))
 CXXFLAGS += -O2 -Wall -Wextra -Wno-parentheses -std=c++20
-CXXFLAGS += -g -D_GLIBCXX_USE_C99_MATH=1
+CXXFLAGS += -g -D_GLIBCXX_USE_C99_MATH=1 -MMD -MP
 CPPFLAGS += -DNDEBUG
 
 # Add this for clang
@@ -219,15 +208,5 @@ endif
 $(OBJ_DIR)/%.o : %.cpp
 	$(COMPILE.cpp) $(OUTPUT_OPTION) $<
 
-$(OBJ_DIR)/%.d : %.cpp $(OBJ_DIR)/location.hh
-	mkdir -p $(OBJ_DIR) 2> /dev/null || true
-	set -e; $(COMPILE.cpp) -MM $< \
-	| sed 's,\(.*\.o\)\( *:\),$(OBJ_DIR)/\1 $@\2,g' > $@; \
-	[ -s $@ ] || rm -f $@
-
-$(OBJ_DIR)/cfdg.tab.d:
-	mkdir -p $(OBJ_DIR) 2> /dev/null || true
-
-$(OBJ_DIR)/lex.yy.d:
-	mkdir -p $(OBJ_DIR) 2> /dev/null || true
-
+deps := $(OBJS:.o=.d)
+-include $(deps)
