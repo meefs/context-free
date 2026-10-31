@@ -1,5 +1,16 @@
   Change Log
 
+V3.5 - November 2026
+--------------------
+* Support animation output to GIF files or sets of PNG files
+* Upload GIF files to gallery
+
+  Bug fixes:
+
+* Handle constant expressions in if()/select() selector expression.
+* cfdg files that had HSB or HSBA adjustments but no saturation
+  adjustments would fail to draw in color
+
 V3.4.3 - June 2026
 ------------------
   Bug fixes:
